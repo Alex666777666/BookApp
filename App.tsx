@@ -1,7 +1,10 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, Platform, StatusBar} from 'react-native';
-import {SplashScreen as CustomSplashScreen} from './src/screens/SplashScreen/SplashScreen';
+import {View, Text, Platform, StatusBar, SafeAreaView} from 'react-native';
 import SplashScreen from 'react-native-splash-screen';
+
+import {SplashScreen as CustomSplashScreen} from './src/screens/SplashScreen/SplashScreen';
+import {LibraryScreen} from './src/screens/MainScreen/LibraryScreen';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -22,22 +25,20 @@ const App = () => {
   }, [timer]);
 
   return (
-    <>
-      <StatusBar barStyle="light-content" backgroundColor={'black'} />
+    <GestureHandlerRootView style={{flex: 1}}>
       {isLoading ? (
-        <CustomSplashScreen timer={timer} />
+        <>
+          <StatusBar hidden={true} />
+          <CustomSplashScreen timer={timer} />
+        </>
       ) : (
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: 'white',
-          }}>
-          <Text style={{fontSize: 24, color: 'black'}}>Your App Goes Here</Text>
-        </View>
+        <>
+          <StatusBar barStyle="light-content" backgroundColor={'#000000'} />
+
+          <LibraryScreen />
+        </>
       )}
-    </>
+    </GestureHandlerRootView>
   );
 };
 

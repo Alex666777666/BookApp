@@ -48,24 +48,22 @@ export const SplashScreen = ({timer}: SplashScreenProps) => {
   }, [timer]);
 
   return (
-    <SafeAreaView style={{flex: 1}}>
-      <ImageBackground source={loading} style={styles.bgImage}>
-        <View style={styles.container}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.mainTitle}>Book App</Text>
-            <Text style={styles.subTitle}>Welcome to Book App</Text>
-          </View>
-          <Progress.Bar
-            progress={progress}
-            unfilledColor="#FFFFFF33"
-            borderWidth={0}
-            color="#ffffff"
-            width={274}
-            height={6}
-          />
+    <ImageBackground source={loading} style={styles.bgImage}>
+      <View style={styles.container}>
+        <View style={styles.titleContainer}>
+          <Text style={styles.mainTitle}>Book App</Text>
+          <Text style={styles.subTitle}>Welcome to Book App</Text>
         </View>
-      </ImageBackground>
-    </SafeAreaView>
+        <Progress.Bar
+          progress={progress}
+          unfilledColor="#FFFFFF33"
+          borderWidth={0}
+          color="#ffffff"
+          width={274}
+          height={6}
+        />
+      </View>
+    </ImageBackground>
   );
 };
 
