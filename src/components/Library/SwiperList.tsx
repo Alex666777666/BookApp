@@ -2,6 +2,8 @@ import React from 'react';
 import {Dimensions, Image, Pressable, StyleSheet, View} from 'react-native';
 import Swiper from 'react-native-swiper';
 
+import FastImage from 'react-native-fast-image';
+
 interface SwiperListProps {
   navigation: any;
   slidesData: Array<{
@@ -32,11 +34,15 @@ export const SwiperList: React.FC<SwiperListProps> = ({
           {slidesData.map(item => (
             <Pressable
               key={item.id}
-              onPress={() => navigation.navigate('Detail')}>
-              <Image
+              onPress={() =>
+                navigation.navigate('Detail', {
+                  slide: item,
+                })
+              }>
+              <FastImage
                 source={item.source}
                 style={styles.slideImage}
-                resizeMode="cover"
+                resizeMode={FastImage.resizeMode.cover}
               />
             </Pressable>
           ))}

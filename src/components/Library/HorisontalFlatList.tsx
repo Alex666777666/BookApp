@@ -45,7 +45,12 @@ export const HorisontalFlatList: React.FC<HorisontalFlatListProps> = ({
       renderItem={({item}) => (
         <TouchableOpacity
           style={styles.bookItem}
-          onPress={() => navigation.navigate('Detail', {book: item})}>
+          onPress={() => {
+            const sameGenreBooks = data.filter(
+              (b: BookItem) => b.genre === item.genre,
+            );
+            navigation.navigate('Detail', {book: item, sameGenreBooks});
+          }}>
           {item.cover_url ? (
             <Image
               source={{uri: item.cover_url}}
