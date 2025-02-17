@@ -13,6 +13,17 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import {RootStackParamList} from './src/types/navigation';
 
+import firebase from '@react-native-firebase/app';
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+
+const app = firebase.app();
+let anon = auth().signInAnonymously();
+let test = firestore().collection('users').get();
+console.log('-=-=-=-=-=-=-=-=-=test: ', test);
+console.log('-=-=-=-=-=-=-=-=-=app: ', app);
+console.log('-=-=-=-=-=-=-=-=-=anon: ', anon);
+
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const timer = 2000;
 
