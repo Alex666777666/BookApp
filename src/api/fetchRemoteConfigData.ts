@@ -11,6 +11,8 @@ export const fetchRemoteConfigData = async () => {
 
   await remoteConfig().fetchAndActivate();
 
-  const jsonData = remoteConfig().getValue('json_data').asString();
-  return JSON.parse(jsonData);
+  const allValues = remoteConfig().getAll();
+
+  const rawJson = allValues['json_data']?.asString() || '{}';
+  return JSON.parse(rawJson);
 };
