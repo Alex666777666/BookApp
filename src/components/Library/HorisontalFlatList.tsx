@@ -1,18 +1,28 @@
 import React from 'react';
-import {FlatList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Image,
+} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../../types/navigation';
 
-type LibraryScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  'Library'
->;
-
 export interface BookItem {
   id: string;
   title: string;
-  bookId?: string;
+  cover_url?: string;
+  author?: string;
+  genre?: string;
+  likes?: string;
+  quotes?: string;
+  summary?: string;
+  views?: string;
+
+  recommendedBooks?: Array<{id: string; title: string}>;
 }
 
 export interface HorisontalFlatListProps {
@@ -22,7 +32,8 @@ export interface HorisontalFlatListProps {
 export const HorisontalFlatList: React.FC<HorisontalFlatListProps> = ({
   data,
 }) => {
-  const navigation = useNavigation<LibraryScreenNavigationProp>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList, 'Library'>>();
   const ITEM_WIDTH = 122;
 
   return (
@@ -34,8 +45,21 @@ export const HorisontalFlatList: React.FC<HorisontalFlatListProps> = ({
       renderItem={({item}) => (
         <TouchableOpacity
           style={styles.bookItem}
-          onPress={() => navigation.navigate('Detail')}>
-          <View style={styles.bookCover} />
+          onPress={() => {
+            const sameGenreBooks = data.filter(
+              (b: BookItem) => b.genre === item.genre,
+            );
+            navigation.navigate('Detail', {book: item, sameGenreBooks});
+          }}>
+          {item.cover_url ? (
+            <Image
+              source={{uri: item.cover_url}}
+              style={styles.bookCover}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.bookCover} />
+          )}
           <Text style={styles.bookTitle} numberOfLines={2}>
             {item.title}
           </Text>
