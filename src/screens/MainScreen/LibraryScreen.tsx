@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -7,206 +7,108 @@ import {
   SectionList,
   ActivityIndicator,
 } from 'react-native';
-
 import {useNavigation} from '@react-navigation/native';
 import {HorisontalFlatList} from '../../components/Library/HorisontalFlatList';
 import {SwiperList} from '../../components/Library/SwiperList';
+import {fetchBooks} from '../../api/books/fetchBooks';
+import {fetchSlides} from '../../api/slides/fetchSlides';
+
+import {BooksContext} from '../../context/BooksProvider';
+
+const SECTIONS_PER_PAGE = 5;
 
 export const LibraryScreen = () => {
   const navigation = useNavigation();
 
-  const slidesData = [
-    {
-      id: '1',
-      title: 'Heroine',
-      source: require('../../assets/mockedPictures/picture1.png'),
-    },
-    {
-      id: '2',
-      title: 'Virgin',
-      source: require('../../assets/mockedPictures/picture2.png'),
-    },
-  ];
+  const {books, setBooks} = useContext(BooksContext);
 
-  const sectionsData = [
-    {
-      title: 'New Arrivals',
-      data: [
-        [
-          {id: '1', title: 'A Beta Before an Alpha', bookId: '001'},
-          {id: '2', title: 'Alpha’s Bride', bookId: '002'},
-          {id: '3', title: 'Howling Moon', bookId: '003'},
-          {id: '4', title: "The Wolf's Den", bookId: '004'},
-          {id: '5', title: "The Alpha's Mate", bookId: '005'},
-          {id: '6', title: 'Moonlight Serenade', bookId: '006'},
-          {id: '7', title: 'Furry Little Secret', bookId: '007'},
-          {id: '8', title: 'The Howling Truth', bookId: '008'},
-          {id: '9', title: 'Pawsitive Vibes Only', bookId: '009'},
-          {id: '10', title: 'Fur-Ever Friends', bookId: '010'},
-          {id: '11', title: 'Tail of Temptation', bookId: '011'},
-          {id: '12', title: 'Whisker Woes', bookId: '012'},
-        ],
-      ],
-    },
-    {
-      title: 'Romance',
-      data: [
-        [
-          {id: '4', title: 'Forbidden Love'},
-          {id: '5', title: 'Prince Reagan'},
-          {id: '6', title: 'Hangry Wolf With His Queen'},
-        ],
-      ],
-    },
-    {
-      title: 'Top Romantic Comedy',
-      data: [
-        [
-          {id: '7', title: "Alpha's Abandoned..."},
-          {id: '8', title: 'Year of Goodbyes'},
-          {id: '9', title: 'Prince Reagan'},
-        ],
-      ],
-    },
-    {
-      title: 'Top Romantic Comedy',
-      data: [
-        [
-          {id: '7', title: "Alpha's Abandoned..."},
-          {id: '8', title: 'Year of Goodbyes'},
-          {id: '9', title: 'Prince Reagan'},
-        ],
-      ],
-    },
-    {
-      title: 'Top Romantic Comedy',
-      data: [
-        [
-          {id: '7', title: "Alpha's Abandoned..."},
-          {id: '8', title: 'Year of Goodbyes'},
-          {id: '9', title: 'Prince Reagan'},
-        ],
-      ],
-    },
-    {
-      title: 'Top Romantic Comedy',
-      data: [
-        [
-          {id: '7', title: "Alpha's Abandoned..."},
-          {id: '8', title: 'Year of Goodbyes'},
-          {id: '9', title: 'Prince Reagan'},
-        ],
-      ],
-    },
-    {
-      title: 'Top Romantic Comedy',
-      data: [
-        [
-          {id: '7', title: "Alpha's Abandoned..."},
-          {id: '8', title: 'Year of Goodbyes'},
-          {id: '9', title: 'Prince Reagan'},
-        ],
-      ],
-    },
-    {
-      title: 'New Arrivals',
-      data: [
-        [
-          {id: '1', title: 'Billionaire Wolf', bookId: '001'},
-          {id: '2', title: 'Alpha’s Bride', bookId: '002'},
-          {id: '3', title: 'Howling Moon', bookId: '003'},
-          {id: '4', title: "The Wolf's Den", bookId: '004'},
-          {id: '5', title: "The Alpha's Mate", bookId: '005'},
-          {id: '6', title: 'Moonlight Serenade', bookId: '006'},
-          {id: '7', title: 'Furry Little Secret', bookId: '007'},
-          {id: '8', title: 'The Howling Truth', bookId: '008'},
-          {id: '9', title: 'Pawsitive Vibes Only', bookId: '009'},
-          {id: '10', title: 'Fur-Ever Friends', bookId: '010'},
-          {id: '11', title: 'Tail of Temptation', bookId: '011'},
-          {id: '12', title: 'Whisker Woes', bookId: '012'},
-        ],
-      ],
-    },
-    {
-      title: 'Romance',
-      data: [
-        [
-          {id: '4', title: 'Forbidden Love'},
-          {id: '5', title: 'Prince Reagan'},
-          {id: '6', title: 'Hangry Wolf With His Queen'},
-        ],
-      ],
-    },
-    {
-      title: 'Top Romantic Comedy',
-      data: [
-        [
-          {id: '7', title: "Alpha's Abandoned..."},
-          {id: '8', title: 'Year of Goodbyes'},
-          {id: '9', title: 'Prince Reagan'},
-        ],
-      ],
-    },
-    {
-      title: 'Top Romantic Comedy',
-      data: [
-        [
-          {id: '7', title: "Alpha's Abandoned..."},
-          {id: '8', title: 'Year of Goodbyes'},
-          {id: '9', title: 'Prince Reagan'},
-        ],
-      ],
-    },
-    {
-      title: 'Top Romantic Comedy',
-      data: [
-        [
-          {id: '7', title: "Alpha's Abandoned..."},
-          {id: '8', title: 'Year of Goodbyes'},
-          {id: '9', title: 'Prince Reagan'},
-        ],
-      ],
-    },
-    {
-      title: 'Top Romantic Comedy',
-      data: [
-        [
-          {id: '7', title: "Alpha's Abandoned..."},
-          {id: '8', title: 'Year of Goodbyes'},
-          {id: '9', title: 'Prince Reagan'},
-        ],
-      ],
-    },
-    {
-      title: 'Top Romantic Comedy',
-      data: [
-        [
-          {id: '7', title: "Alpha's Abandoned..."},
-          {id: '8', title: 'Year of Goodbyes'},
-          {id: '9', title: 'Prince Reagan'},
-        ],
-      ],
-    },
-  ];
+  const [slides, setSlides] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [allSectionsData, setAllSectionsData] = useState([]);
+  const [currentSections, setCurrentSections] = useState([]);
 
-  const SECTIONS_PER_PAGE = 5;
-  const [currentSections, setCurrentSections] = useState(
-    sectionsData.slice(0, SECTIONS_PER_PAGE),
-  );
-  const [loadingMore, setLoadingMore] = useState(false);
+  useEffect(() => {
+    const fetchBooksAsync = async () => {
+      setIsLoading(true);
+      try {
+        const data = await fetchBooks();
+        const mappedBooks = data.map(book => ({
+          id: String(book.id),
+          title: book.name,
+          cover_url: book.cover_url,
+          genre: book.genre,
+          author: book.author,
+          likes: book.likes,
+          quotes: book.quotes,
+          summary: book.summary,
+          views: book.views,
+        }));
+
+        setBooks(mappedBooks);
+      } catch (error) {
+        console.error('Error fetching books:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBooksAsync();
+  }, [setBooks]);
+
+  useEffect(() => {
+    const fetchSlidesAsync = async () => {
+      try {
+        const slidesData = await fetchSlides();
+        const mappedSlides = slidesData.map(slide => ({
+          id: String(slide.id),
+          title: `Slide ${slide.book_id}`,
+          source: {uri: slide.cover},
+        }));
+        setSlides(mappedSlides);
+      } catch (error) {
+        console.error('Error fetching slides:', error);
+      }
+    };
+
+    fetchSlidesAsync();
+  }, []);
+
+  useEffect(() => {
+    const groupedBooks = books.reduce((acc, book) => {
+      const {genre} = book;
+      if (!acc[genre]) {
+        acc[genre] = [];
+      }
+      acc[genre].push(book);
+      return acc;
+    }, {});
+
+    const newSectionsData = Object.entries(groupedBooks).map(
+      ([genre, books]) => ({
+        title: genre,
+        data: [books],
+      }),
+    );
+
+    setAllSectionsData(newSectionsData);
+
+    setCurrentSections(newSectionsData.slice(0, SECTIONS_PER_PAGE));
+  }, [books]);
 
   const handleLoadMore = () => {
-    if (loadingMore || currentSections.length >= sectionsData.length) return;
+    if (isLoadingMore) return;
+    if (currentSections.length >= allSectionsData.length) return;
 
-    setLoadingMore(true);
+    setIsLoadingMore(true);
 
     setTimeout(() => {
       const nextCount = Math.min(
         currentSections.length + SECTIONS_PER_PAGE,
-        sectionsData.length,
+        allSectionsData.length,
       );
-      setCurrentSections(sectionsData.slice(0, nextCount));
-      setLoadingMore(false);
+      setCurrentSections(allSectionsData.slice(0, nextCount));
+      setIsLoadingMore(false);
     }, 1000);
   };
 
@@ -216,30 +118,35 @@ export const LibraryScreen = () => {
         <View style={{marginBottom: 16}}>
           <Text style={styles.headerText}>Library</Text>
         </View>
-        <SectionList
-          sections={currentSections}
-          keyExtractor={(item, index) => String(index)}
-          stickySectionHeadersEnabled={false}
-          ListHeaderComponent={
-            <SwiperList navigation={navigation} slidesData={slidesData} />
-          }
-          renderSectionHeader={({section}) => (
-            <View style={{marginVertical: 8}}>
-              <Text style={styles.sectionTitle}>{section.title}</Text>
-            </View>
-          )}
-          renderItem={({item}) => <HorisontalFlatList data={item} />}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={
-            loadingMore ? (
-              <View style={{paddingVertical: 20}}>
-                <ActivityIndicator size="large" color="#D0006E" />
+
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#D0006E" />
+        ) : (
+          <SectionList
+            sections={currentSections}
+            keyExtractor={(item, index) => String(index)}
+            stickySectionHeadersEnabled={false}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            ListHeaderComponent={
+              <SwiperList navigation={navigation} slidesData={slides} />
+            }
+            renderSectionHeader={({section}) => (
+              <View style={{marginVertical: 8}}>
+                <Text style={styles.sectionTitle}>{section.title}</Text>
               </View>
-            ) : null
-          }
-          contentContainerStyle={{paddingBottom: 20}}
-        />
+            )}
+            renderItem={({item}) => <HorisontalFlatList data={item} />}
+            ListFooterComponent={
+              isLoadingMore ? (
+                <View style={{paddingVertical: 20}}>
+                  <ActivityIndicator size="large" color="#D0006E" />
+                </View>
+              ) : null
+            }
+            contentContainerStyle={{paddingBottom: 20}}
+          />
+        )}
       </View>
     </SafeAreaView>
   );
@@ -256,10 +163,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito Sans',
     fontSize: 20,
   },
-
   sectionTitle: {
     fontFamily: 'Nunito Sans',
-    fontWeight: 700,
+    fontWeight: '700',
     fontSize: 20,
     color: '#FFFFFF',
   },
