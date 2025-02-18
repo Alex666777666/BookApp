@@ -1,0 +1,95 @@
+# BookApp
+
+BookApp is a React Native mobile application designed to provide users with a seamless experience for exploring, reading, and managing their favorite books. This app utilizes Firebase for authentication and data management, along with various React Native libraries to enhance performance and UI/UX.
+
+## Features
+
+- Browse and explore books by genre
+- View book details, including summaries, author info, and user statistics
+- Add books to a personalized library
+- Swipe through featured books using an interactive carousel
+- Firebase authentication for secure user login
+- Offline support with Firestore caching
+
+## Installation
+
+### Prerequisites
+
+Ensure you have the following installed:
+
+- [Node.js](https://nodejs.org/) (version >= 18)
+- [React Native CLI](https://reactnative.dev/docs/environment-setup)
+- Android Studio (for Android development) or Xcode (for iOS development)
+
+### Clone the Repository
+
+```sh
+git clone https://github.com/Alex666777666/BookApp.git
+cd BookApp
+```
+
+### Install Dependencies
+
+```sh
+npm install
+```
+
+## Running the Application
+
+### Start Metro Bundler
+
+```sh
+npm start
+```
+
+### Run on Android Emulator/Device
+
+```sh
+npm run android
+```
+
+### Run on iOS Simulator/Device
+
+```sh
+npm run ios
+```
+
+(Note: For iOS, ensure you have CocoaPods installed and run `cd ios && pod install` before running the app.)
+
+## Project Structure
+
+```
+BookApp/
+│-- android/              # Android-specific files
+│-- ios/                  # iOS-specific files
+│-- src/                  # Main application source code
+│   ├── api/              # API service calls
+│   ├── assets/           # All UI images or backgrounds
+│   ├── components/       # Reusable UI components
+│   ├── context/          # Context providers
+│   ├── screens/          # Screen components
+│   ├── types/            # TypeScript interfaces
+│   ├── ui/               # Ui components
+│-- App.tsx               # Entry point of the application
+│-- package.json          # Project metadata and dependencies
+│-- README.md             # Documentation
+```
+
+## Dependencies
+
+This project uses the following dependencies:
+
+### Core Dependencies
+
+- React Native (`react-native@0.77.0`)
+- React (`react@18.3.1`)
+- React Navigation (`@react-navigation/native`, `@react-navigation/native-stack`)
+- Firebase (`@react-native-firebase/app`, `@react-native-firebase/auth`, `@react-native-firebase/firestore`)
+- React Native Gesture Handler (`react-native-gesture-handler`)
+- React Native Reanimated (`react-native-reanimated`)
+- React Native Fast Image (`react-native-fast-image`)
+
+### Development Dependencies
+
+- TypeScript (`typescript@5.0.4`)
+- Prettier (`prettier@2.8.8`)
