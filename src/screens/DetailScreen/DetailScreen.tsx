@@ -32,6 +32,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {BookSection} from '../../components/Detail/BookSection';
+import BookDetails from '../../components/Detail/BookDetails';
 
 interface BookItem {
   id: string;
@@ -196,23 +197,7 @@ export const DetailScreen = () => {
       <View style={styles.bottomWhiteCard}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <Animated.View style={{...animationStyle}}>
-            {currentBook && (
-              <>
-                <View style={styles.statsContainer}>
-                  {stats.map((stat, index) => (
-                    <View key={index} style={styles.statItem}>
-                      <Text style={styles.statValue}>{stat.value}</Text>
-                      <Text style={styles.statLabel}>{stat.label}</Text>
-                    </View>
-                  ))}
-                </View>
-                <View style={{backgroundColor: '#C4C4C4', height: 1}} />
-                <View style={styles.summaryContainer}>
-                  <Text style={styles.sectionHeading}>Summary</Text>
-                  <Text style={styles.summaryText}>{currentBook.summary}</Text>
-                </View>
-              </>
-            )}
+            {currentBook && <BookDetails book={currentBook} />}
 
             {likeSectionBooks.length > 0 && (
               <>
@@ -230,10 +215,7 @@ export const DetailScreen = () => {
                   keyExtractor={item => item.id}
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={[
-                    {paddingVertical: !book ? 60 : 0},
-                    styles.alsoLikeListContent,
-                  ]}
+                  contentContainerStyle={[styles.alsoLikeListContent]}
                   renderItem={({item}) => (
                     <TouchableOpacity
                       style={styles.recommendedItem}
@@ -282,40 +264,6 @@ const styles = StyleSheet.create({
   bottomWhiteCard: {backgroundColor: '#ffffff', flex: 1},
   scrollContent: {paddingHorizontal: 16, paddingBottom: 40},
 
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  statItem: {alignItems: 'center'},
-  statValue: {
-    fontFamily: 'Nunito Sans',
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#0B080F',
-    marginBottom: 2,
-  },
-  statLabel: {
-    fontFamily: 'Nunito Sans',
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#D9D5D6',
-  },
-  summaryContainer: {paddingTop: 16, marginBottom: 15},
-  sectionHeading: {
-    fontFamily: 'Nunito Sans',
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#0B080F',
-    marginBottom: 12,
-  },
-  summaryText: {
-    fontSize: 14,
-    fontFamily: 'Nunito Sans',
-    fontWeight: '600',
-    color: '#393637',
-  },
   alsoLikeListContent: {paddingHorizontal: 16},
   recommendedItem: {marginRight: 12, width: 120, alignItems: 'center'},
   recommendedPlaceholder: {
