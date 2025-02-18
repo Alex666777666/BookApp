@@ -1,15 +1,11 @@
-import {BookItem} from '../components/Library/HorisontalFlatList';
-
-export interface SlideItem {
-  id: string;
-  title: string;
-  source: {uri: string} | number;
-}
+import {BookItem} from './bookItem';
+import {SlideItem} from './slideItem';
 
 export type RootStackParamList = {
   Library: undefined;
   Detail: {
     book?: BookItem;
     slide?: SlideItem;
+    sameGenreBooks?: BookItem[];
   };
 };

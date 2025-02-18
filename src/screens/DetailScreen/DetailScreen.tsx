@@ -33,23 +33,8 @@ import {BookSection} from '../../components/Detail/BookSection';
 import BookDetails from '../../components/Detail/BookDetails';
 import {RecommendedBooks} from '../../components/Detail/RecomendedBooks';
 
-interface BookItem {
-  id: string;
-  title: string;
-  cover_url?: string;
-  genre?: string;
-  author?: string;
-  likes?: string;
-  quotes?: string;
-  summary?: string;
-  views?: string;
-}
-
-interface SlideItem {
-  id: string;
-  title: string;
-  source: {uri?: string};
-}
+import {BookItem} from '../../types/bookItem';
+import { SlideItem } from '../../types/slideItem';
 
 const ITEM_WIDTH = 160;
 const ITEM_SPACING = 12;
@@ -155,15 +140,6 @@ export const DetailScreen = () => {
     },
     [updateDataAfterFadeOut, animatedOpacity],
   );
-
-  const stats = currentBook
-    ? [
-        {label: 'Readers', value: currentBook.views},
-        {label: 'Likes', value: currentBook.likes},
-        {label: 'Quotes', value: currentBook.quotes},
-        {label: 'Genre', value: currentBook.genre},
-      ]
-    : [];
 
   return (
     <ImageBackground source={frame} style={styles.bgImage}>

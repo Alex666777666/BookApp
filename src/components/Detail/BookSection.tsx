@@ -8,16 +8,24 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 import {BooksContext} from '../../context/BooksProvider';
+import {BookItem} from '../../types/bookItem';
 
 const ITEM_WIDTH = 160;
 const ITEM_SPACING = 12;
+
+interface BookSectionProps {
+  book: BookItem;
+  initialSameGenreBooks: BookItem[];
+  handleSelectBook: (bookId: string, skipScroll?: boolean) => void;
+  animationStyle: any;
+}
 
 export const BookSection = ({
   book,
   initialSameGenreBooks,
   handleSelectBook,
   animationStyle,
-}) => {
+}: BookSectionProps) => {
   const [currentBook, setCurrentBook] = useState<BookItem | undefined>(book);
   const [genreBooks, setGenreBooks] = useState<BookItem[]>(
     initialSameGenreBooks,

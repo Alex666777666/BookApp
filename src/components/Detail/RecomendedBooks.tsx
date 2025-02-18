@@ -8,11 +8,20 @@ import {
   StyleSheet,
 } from 'react-native';
 
+import {BookItem} from '../../types/bookItem';
+import {SlideItem} from '../../types/slideItem';
+
+interface RecommendedBooksProps {
+  likeSectionBooks: BookItem[];
+  slide?: SlideItem | null;
+  handleSelectBook: (bookId: string) => void;
+}
+
 export const RecommendedBooks = ({
   likeSectionBooks,
   slide,
   handleSelectBook,
-}) => {
+}: RecommendedBooksProps) => {
   if (likeSectionBooks.length === 0) return null;
 
   return (

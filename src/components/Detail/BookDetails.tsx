@@ -1,7 +1,12 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
+import {BookItem} from '../../types/bookItem';
 
-const BookDetails = ({book}) => {
+interface BookDetailsProps {
+  book: BookItem;
+}
+
+const BookDetails: React.FC<BookDetailsProps> = ({book}) => {
   const stats = [
     {label: 'Readers', value: book.views},
     {label: 'Likes', value: book.likes},
