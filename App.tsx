@@ -14,6 +14,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {RootStackParamList} from './src/types/navigation';
 
 import {BooksProvider} from './src/context/BooksProvider';
+import FastImage from 'react-native-fast-image';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const timer = 2000;
@@ -28,6 +29,9 @@ const App = () => {
         SplashScreen.hide();
       }, 300);
     }
+
+    FastImage.clearMemoryCache();
+    FastImage.clearDiskCache();
 
     const timeoutId = setTimeout(() => {
       Animated.timing(splashOpacity, {
