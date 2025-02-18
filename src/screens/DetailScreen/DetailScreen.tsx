@@ -1,4 +1,11 @@
-import React, {useRef, useState, useEffect, useContext} from 'react';
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  useMemo,
+  useRef,
+  useCallback,
+} from 'react';
 import {
   View,
   Text,
@@ -6,19 +13,27 @@ import {
   ImageBackground,
   SafeAreaView,
   TouchableOpacity,
-  ScrollView,
   Dimensions,
-  Animated,
   Image,
   FlatList,
+  ScrollView,
 } from 'react-native';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import FastImage from 'react-native-fast-image';
 
+import {BooksContext} from '../../context/BooksProvider';
 import {LeftArrow} from '../../ui/LeftArrow';
 import frame from '../../assets/pictures/Frame.png';
 import {fetchLikeSection} from '../../api/likeSection/fetchLikeSection';
-import {BooksContext} from '../../context/BooksProvider';
+
+import Animated, {
+  useSharedValue,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  runOnJS,
+  interpolate,
+  withTiming,
+} from 'react-native-reanimated';
 
 interface BookItem {
   id: string;
@@ -58,44 +73,42 @@ export const DetailScreen = () => {
     slide?: SlideItem;
   };
 
-  const [currentBook, setCurrentBook] = useState<BookItem | undefined>(
-    book || undefined,
-  );
-
+  const [currentBook, setCurrentBook] = useState<BookItem | undefined>(book);
   const [genreBooks, setGenreBooks] = useState<BookItem[]>(
     initialSameGenreBooks,
   );
-
-  const fadeAnim = useRef(new Animated.Value(1)).current;
-
-  const scrollRef = useRef<Animated.ScrollView>(null);
-  const scrollX = useRef(new Animated.Value(0)).current;
-
-  const startIndex =
-    initialSameGenreBooks && book
-      ? initialSameGenreBooks.findIndex(b => b.id === book.id)
-      : -1;
   const [activeIndex, setActiveIndex] = useState(
-    startIndex >= 0 ? startIndex : 0,
+    book && initialSameGenreBooks
+      ? initialSameGenreBooks.findIndex(b => b.id === book.id)
+      : 0,
   );
 
-  useEffect(() => {
-    if (currentBook && genreBooks.length && startIndex > 0) {
-      setTimeout(() => {
-        scrollRef.current?.scrollTo({
-          x: startIndex * FULL_ITEM_SIZE,
-          animated: false,
-        });
-      }, 0);
-    }
-  }, [currentBook, genreBooks, startIndex]);
+  const animatedOpacity = useSharedValue(1);
+
+  const animationStyle = useAnimatedStyle(() => {
+    return {
+      opacity: animatedOpacity.value,
+    };
+  });
+
+  const genreBooksMap = useMemo(() => {
+    const map: {[key: string]: BookItem[]} = {};
+    books.forEach(b => {
+      if (b.genre) {
+        if (!map[b.genre]) {
+          map[b.genre] = [];
+        }
+        map[b.genre].push(b);
+      }
+    });
+    return map;
+  }, [books]);
 
   const [likeSectionBooks, setLikeSectionBooks] = useState<BookItem[]>([]);
   useEffect(() => {
     const fetchLiked = async () => {
       try {
         const likedIDs = await fetchLikeSection();
-        console.log('likedIDs =>', likedIDs);
         const matched = books.filter(b => likedIDs.includes(Number(b.id)));
         setLikeSectionBooks(matched);
       } catch (err) {
@@ -107,52 +120,78 @@ export const DetailScreen = () => {
     }
   }, [books]);
 
-  const onMomentumScrollEnd = (e: any) => {
-    const offsetX = e.nativeEvent.contentOffset.x;
-    const newIndex = Math.round(offsetX / FULL_ITEM_SIZE);
-    if (newIndex !== activeIndex) {
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }).start(() => {
-        setActiveIndex(newIndex);
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }).start();
-      });
-    }
-  };
+  const scrollX = useSharedValue(0);
+  const scrollRef = useRef<Animated.ScrollView>(null);
 
-  const handleSelectRecommended = (selectedBook: BookItem) => {
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start(() => {
+  const updateDataAfterFadeOut = useCallback(
+    (selectedBookId: string, skipScroll?: boolean) => {
+      const selectedBook = books.find(b => b.id === selectedBookId);
+      if (!selectedBook) {
+        animatedOpacity.value = withTiming(1, {duration: 200});
+        return;
+      }
+      const newGenreBooks = selectedBook.genre
+        ? genreBooksMap[selectedBook.genre] || []
+        : [];
+      const newActiveIndex = newGenreBooks.findIndex(
+        b => b.id === selectedBookId,
+      );
       setCurrentBook(selectedBook);
-
-      const newGenreBooks = books.filter(b => b.genre === selectedBook.genre);
       setGenreBooks(newGenreBooks);
-
-      const newIndex = newGenreBooks.findIndex(b => b.id === selectedBook.id);
-      setActiveIndex(newIndex >= 0 ? newIndex : 0);
-      setTimeout(() => {
+      setActiveIndex(newActiveIndex >= 0 ? newActiveIndex : 0);
+      if (!skipScroll && newActiveIndex >= 0) {
         scrollRef.current?.scrollTo({
-          x: (newIndex >= 0 ? newIndex : 0) * FULL_ITEM_SIZE,
+          x: newActiveIndex * FULL_ITEM_SIZE,
           animated: true,
         });
-      }, 50);
+      }
 
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-    });
-  };
+      animatedOpacity.value = withTiming(1, {duration: 200});
+    },
+    [books, genreBooksMap, animatedOpacity],
+  );
+
+  const handleSelectBook = useCallback(
+    (selectedBookId: string, skipScroll?: boolean) => {
+      animatedOpacity.value = withTiming(0, {duration: 200}, () => {
+        runOnJS(updateDataAfterFadeOut)(selectedBookId, skipScroll);
+      });
+    },
+    [updateDataAfterFadeOut, animatedOpacity],
+  );
+
+  const handleMomentumEnd = useCallback(
+    (newIndex: number) => {
+      if (newIndex !== activeIndex && genreBooks[newIndex]) {
+        handleSelectBook(genreBooks[newIndex].id, true);
+      }
+    },
+    [activeIndex, genreBooks, handleSelectBook],
+  );
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: event => {
+      'worklet';
+      scrollX.value = event.contentOffset.x;
+    },
+    onMomentumEnd: event => {
+      'worklet';
+      const offsetX = event.contentOffset.x;
+      const newIndex = Math.round(offsetX / FULL_ITEM_SIZE);
+      runOnJS(handleMomentumEnd)(newIndex);
+    },
+  });
+
+  useEffect(() => {
+    if (currentBook && genreBooks.length && activeIndex > 0) {
+      setTimeout(() => {
+        scrollRef.current?.scrollTo({
+          x: activeIndex * FULL_ITEM_SIZE,
+          animated: false,
+        });
+      }, 0);
+    }
+  }, [currentBook, genreBooks, activeIndex]);
 
   const stats = currentBook
     ? [
@@ -171,6 +210,7 @@ export const DetailScreen = () => {
           onPress={() => navigation.goBack()}>
           <LeftArrow />
         </TouchableOpacity>
+
         {currentBook && genreBooks.length ? (
           <>
             <Animated.ScrollView
@@ -184,48 +224,42 @@ export const DetailScreen = () => {
                 paddingHorizontal: (width - ITEM_WIDTH) / 2,
                 paddingTop: 15,
               }}
-              scrollEventThrottle={16}
-              onMomentumScrollEnd={onMomentumScrollEnd}
-              onScroll={Animated.event(
-                [{nativeEvent: {contentOffset: {x: scrollX}}}],
-                {useNativeDriver: true},
-              )}>
+              onScroll={scrollHandler}
+              scrollEventThrottle={16}>
               {genreBooks.map((item, index) => {
-                const inputRange = [
-                  (index - 1) * FULL_ITEM_SIZE,
-                  index * FULL_ITEM_SIZE,
-                  (index + 1) * FULL_ITEM_SIZE,
-                ];
-                const scale = scrollX.interpolate({
-                  inputRange,
-                  outputRange: [0.8, 1, 0.8],
-                  extrapolate: 'clamp',
+                const animatedStyle = useAnimatedStyle(() => {
+                  const inputRange = [
+                    (index - 1) * FULL_ITEM_SIZE,
+                    index * FULL_ITEM_SIZE,
+                    (index + 1) * FULL_ITEM_SIZE,
+                  ];
+                  const scale = interpolate(
+                    scrollX.value,
+                    inputRange,
+                    [0.8, 1, 0.8],
+                    'clamp',
+                  );
+                  return {transform: [{scale}]};
                 });
                 return (
-                  <View key={item.id} style={styles.coverContainer}>
+                  <Animated.View key={item.id} style={[styles.coverContainer]}>
                     {item.cover_url ? (
                       <Animated.Image
                         source={{uri: item.cover_url}}
-                        style={[
-                          styles.coverPlaceholder,
-                          {transform: [{scale}]},
-                        ]}
+                        style={[styles.coverPlaceholder, animatedStyle]}
                         resizeMode="cover"
                       />
                     ) : (
                       <Animated.View
-                        style={[
-                          styles.coverPlaceholder,
-                          {transform: [{scale}]},
-                        ]}
+                        style={[styles.coverPlaceholder, animatedStyle]}
                       />
                     )}
-                  </View>
+                  </Animated.View>
                 );
               })}
             </Animated.ScrollView>
 
-            <Animated.View style={[styles.textContainer, {opacity: fadeAnim}]}>
+            <Animated.View style={[styles.textContainer, animationStyle]}>
               <Text style={styles.bookTitle}>{currentBook.title}</Text>
               <Text style={styles.bookAuthor}>{currentBook.author}</Text>
             </Animated.View>
@@ -244,7 +278,7 @@ export const DetailScreen = () => {
       <View style={styles.topWhiteCard} />
       <View style={styles.bottomWhiteCard}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <Animated.View style={{opacity: fadeAnim}}>
+          <Animated.View style={{...animationStyle}}>
             {currentBook && (
               <>
                 <View style={styles.statsContainer}>
@@ -286,7 +320,7 @@ export const DetailScreen = () => {
                   renderItem={({item}) => (
                     <TouchableOpacity
                       style={styles.recommendedItem}
-                      onPress={() => handleSelectRecommended(item)}>
+                      onPress={() => handleSelectBook(item.id)}>
                       {item.cover_url ? (
                         <Image
                           source={{uri: item.cover_url}}
@@ -320,28 +354,16 @@ export const DetailScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  bgImage: {
-    flex: 1,
-    resizeMode: 'cover',
-  },
-  backButton: {
-    marginLeft: 16,
-    marginTop: 16,
-  },
+  bgImage: {flex: 1, resizeMode: 'cover'},
+  backButton: {marginLeft: 16, marginTop: 16},
   topWhiteCard: {
     backgroundColor: '#ffffff',
     height: 22,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
-  bottomWhiteCard: {
-    backgroundColor: '#ffffff',
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 40,
-  },
+  bottomWhiteCard: {backgroundColor: '#ffffff', flex: 1},
+  scrollContent: {paddingHorizontal: 16, paddingBottom: 40},
   coverContainer: {
     width: ITEM_WIDTH,
     marginRight: ITEM_SPACING,
@@ -353,9 +375,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#C4C4C4',
     borderRadius: 16,
   },
-  textContainer: {
-    paddingTop: 15,
-  },
+  textContainer: {paddingTop: 15},
   bookTitle: {
     fontFamily: 'Nunito Sans',
     fontSize: 20,
@@ -378,9 +398,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 10,
   },
-  statItem: {
-    alignItems: 'center',
-  },
+  statItem: {alignItems: 'center'},
   statValue: {
     fontFamily: 'Nunito Sans',
     fontSize: 18,
@@ -394,10 +412,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#D9D5D6',
   },
-  summaryContainer: {
-    paddingTop: 16,
-    marginBottom: 15,
-  },
+  summaryContainer: {paddingTop: 16, marginBottom: 15},
   sectionHeading: {
     fontFamily: 'Nunito Sans',
     fontSize: 20,
@@ -411,14 +426,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#393637',
   },
-  alsoLikeListContent: {
-    paddingHorizontal: 16,
-  },
-  recommendedItem: {
-    marginRight: 12,
-    width: 120,
-    alignItems: 'center',
-  },
+  alsoLikeListContent: {paddingHorizontal: 16},
+  recommendedItem: {marginRight: 12, width: 120, alignItems: 'center'},
   recommendedPlaceholder: {
     width: 120,
     height: 150,
@@ -450,3 +459,5 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
 });
+
+export default DetailScreen;
