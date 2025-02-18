@@ -13,8 +13,6 @@ import {
   ImageBackground,
   SafeAreaView,
   TouchableOpacity,
-  Image,
-  FlatList,
   ScrollView,
 } from 'react-native';
 import {useNavigation, useRoute} from '@react-navigation/native';
@@ -33,6 +31,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import {BookSection} from '../../components/Detail/BookSection';
 import BookDetails from '../../components/Detail/BookDetails';
+import {RecommendedBooks} from '../../components/Detail/RecomendedBooks';
 
 interface BookItem {
   id: string;
@@ -200,44 +199,11 @@ export const DetailScreen = () => {
             {currentBook && <BookDetails book={currentBook} />}
 
             {likeSectionBooks.length > 0 && (
-              <>
-                <View
-                  style={{
-                    display: slide ? 'none' : 'flex',
-                    backgroundColor: '#C4C4C4',
-                    height: 1,
-                    marginBottom: 15,
-                  }}
-                />
-                <Text style={styles.sectionHeading}>You will also like</Text>
-                <FlatList
-                  data={likeSectionBooks}
-                  keyExtractor={item => item.id}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={[styles.alsoLikeListContent]}
-                  renderItem={({item}) => (
-                    <TouchableOpacity
-                      style={styles.recommendedItem}
-                      onPress={() => handleSelectBook(item.id)}>
-                      {item.cover_url ? (
-                        <Image
-                          source={{uri: item.cover_url}}
-                          style={styles.recommendedPlaceholder}
-                          resizeMode="cover"
-                        />
-                      ) : (
-                        <View style={styles.recommendedPlaceholder} />
-                      )}
-                      <View style={{alignSelf: 'flex-start'}}>
-                        <Text style={styles.recommendedTitle} numberOfLines={2}>
-                          {item.title}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  )}
-                />
-              </>
+              <RecommendedBooks
+                likeSectionBooks={likeSectionBooks}
+                slide={slide}
+                handleSelectBook={handleSelectBook}
+              />
             )}
           </Animated.View>
 
@@ -253,33 +219,29 @@ export const DetailScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  bgImage: {flex: 1, resizeMode: 'cover'},
-  backButton: {marginLeft: 16, marginTop: 16},
+  bgImage: {
+    flex: 1,
+    resizeMode: 'cover',
+  },
+  backButton: {
+    marginLeft: 16,
+    marginTop: 16,
+  },
   topWhiteCard: {
     backgroundColor: '#ffffff',
     height: 22,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
-  bottomWhiteCard: {backgroundColor: '#ffffff', flex: 1},
-  scrollContent: {paddingHorizontal: 16, paddingBottom: 40},
+  bottomWhiteCard: {
+    backgroundColor: '#ffffff',
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 40,
+  },
 
-  alsoLikeListContent: {paddingHorizontal: 16},
-  recommendedItem: {marginRight: 12, width: 120, alignItems: 'center'},
-  recommendedPlaceholder: {
-    width: 120,
-    height: 150,
-    backgroundColor: '#C4C4C4',
-    borderRadius: 16,
-  },
-  recommendedTitle: {
-    color: '#393637',
-    fontSize: 16,
-    fontFamily: 'Nunito Sans',
-    fontWeight: '600',
-    marginTop: 10,
-    lineHeight: 17,
-  },
   readNowButton: {
     backgroundColor: '#DD48A1',
     borderRadius: 30,
