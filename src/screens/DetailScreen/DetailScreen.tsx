@@ -13,7 +13,6 @@ import {
   ImageBackground,
   SafeAreaView,
   TouchableOpacity,
-  Dimensions,
   Image,
   FlatList,
   ScrollView,
@@ -28,12 +27,11 @@ import {fetchLikeSection} from '../../api/likeSection/fetchLikeSection';
 
 import Animated, {
   useSharedValue,
-  useAnimatedScrollHandler,
   useAnimatedStyle,
   runOnJS,
-  interpolate,
   withTiming,
 } from 'react-native-reanimated';
+import {BookSection} from '../../components/Detail/BookSection';
 
 interface BookItem {
   id: string;
@@ -53,7 +51,6 @@ interface SlideItem {
   source: {uri?: string};
 }
 
-const {width} = Dimensions.get('window');
 const ITEM_WIDTH = 160;
 const ITEM_SPACING = 12;
 const FULL_ITEM_SIZE = ITEM_WIDTH + ITEM_SPACING;
@@ -120,7 +117,6 @@ export const DetailScreen = () => {
     }
   }, [books]);
 
-  const scrollX = useSharedValue(0);
   const scrollRef = useRef<Animated.ScrollView>(null);
 
   const updateDataAfterFadeOut = useCallback(
@@ -160,39 +156,6 @@ export const DetailScreen = () => {
     [updateDataAfterFadeOut, animatedOpacity],
   );
 
-  const handleMomentumEnd = useCallback(
-    (newIndex: number) => {
-      if (newIndex !== activeIndex && genreBooks[newIndex]) {
-        handleSelectBook(genreBooks[newIndex].id, true);
-      }
-    },
-    [activeIndex, genreBooks, handleSelectBook],
-  );
-
-  const scrollHandler = useAnimatedScrollHandler({
-    onScroll: event => {
-      'worklet';
-      scrollX.value = event.contentOffset.x;
-    },
-    onMomentumEnd: event => {
-      'worklet';
-      const offsetX = event.contentOffset.x;
-      const newIndex = Math.round(offsetX / FULL_ITEM_SIZE);
-      runOnJS(handleMomentumEnd)(newIndex);
-    },
-  });
-
-  useEffect(() => {
-    if (currentBook && genreBooks.length && activeIndex > 0) {
-      setTimeout(() => {
-        scrollRef.current?.scrollTo({
-          x: activeIndex * FULL_ITEM_SIZE,
-          animated: false,
-        });
-      }, 0);
-    }
-  }, [currentBook, genreBooks, activeIndex]);
-
   const stats = currentBook
     ? [
         {label: 'Readers', value: currentBook.views},
@@ -212,58 +175,12 @@ export const DetailScreen = () => {
         </TouchableOpacity>
 
         {currentBook && genreBooks.length ? (
-          <>
-            <Animated.ScrollView
-              ref={scrollRef}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              decelerationRate="fast"
-              snapToInterval={FULL_ITEM_SIZE}
-              snapToAlignment="start"
-              contentContainerStyle={{
-                paddingHorizontal: (width - ITEM_WIDTH) / 2,
-                paddingTop: 15,
-              }}
-              onScroll={scrollHandler}
-              scrollEventThrottle={16}>
-              {genreBooks.map((item, index) => {
-                const animatedStyle = useAnimatedStyle(() => {
-                  const inputRange = [
-                    (index - 1) * FULL_ITEM_SIZE,
-                    index * FULL_ITEM_SIZE,
-                    (index + 1) * FULL_ITEM_SIZE,
-                  ];
-                  const scale = interpolate(
-                    scrollX.value,
-                    inputRange,
-                    [0.8, 1, 0.8],
-                    'clamp',
-                  );
-                  return {transform: [{scale}]};
-                });
-                return (
-                  <Animated.View key={item.id} style={[styles.coverContainer]}>
-                    {item.cover_url ? (
-                      <Animated.Image
-                        source={{uri: item.cover_url}}
-                        style={[styles.coverPlaceholder, animatedStyle]}
-                        resizeMode="cover"
-                      />
-                    ) : (
-                      <Animated.View
-                        style={[styles.coverPlaceholder, animatedStyle]}
-                      />
-                    )}
-                  </Animated.View>
-                );
-              })}
-            </Animated.ScrollView>
-
-            <Animated.View style={[styles.textContainer, animationStyle]}>
-              <Text style={styles.bookTitle}>{currentBook.title}</Text>
-              <Text style={styles.bookAuthor}>{currentBook.author}</Text>
-            </Animated.View>
-          </>
+          <BookSection
+            book={currentBook}
+            initialSameGenreBooks={genreBooks}
+            handleSelectBook={handleSelectBook}
+            animationStyle={animationStyle}
+          />
         ) : slide ? (
           <View style={{alignItems: 'center', padding: 20}}>
             <FastImage
@@ -364,34 +281,7 @@ const styles = StyleSheet.create({
   },
   bottomWhiteCard: {backgroundColor: '#ffffff', flex: 1},
   scrollContent: {paddingHorizontal: 16, paddingBottom: 40},
-  coverContainer: {
-    width: ITEM_WIDTH,
-    marginRight: ITEM_SPACING,
-    alignItems: 'center',
-  },
-  coverPlaceholder: {
-    width: ITEM_WIDTH,
-    height: 200,
-    backgroundColor: '#C4C4C4',
-    borderRadius: 16,
-  },
-  textContainer: {paddingTop: 15},
-  bookTitle: {
-    fontFamily: 'Nunito Sans',
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    textAlign: 'center',
-    marginTop: 8,
-  },
-  bookAuthor: {
-    fontFamily: 'Nunito Sans',
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#FFFFFFCC',
-    textAlign: 'center',
-    marginBottom: 18,
-  },
+
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
