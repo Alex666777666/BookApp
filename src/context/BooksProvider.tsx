@@ -1,17 +1,5 @@
 import React, {createContext, useState, ReactNode} from 'react';
-
-export interface BookItem {
-  id: string;
-  title: string;
-  cover_url?: string;
-  genre?: string;
-  author?: string;
-  likes?: string;
-  quotes?: string;
-  summary?: string;
-  views?: string;
-  recommendedBooks?: Array<{id: string; title: string; cover_url?: string}>;
-}
+import {BookItem} from '../types/bookItem';
 
 interface BooksContextValue {
   books: BookItem[];

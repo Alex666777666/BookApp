@@ -14,8 +14,19 @@ import {fetchBooks} from '../../api/books/fetchBooks';
 import {fetchSlides} from '../../api/slides/fetchSlides';
 
 import {BooksContext} from '../../context/BooksProvider';
+import {BookApiResponse, BookItem} from '../../types/bookItem';
+import {SlideApiResponse} from '../../types/slideItem';
 
 const SECTIONS_PER_PAGE = 5;
+
+interface BooksByGenre {
+  [genre: string]: BookItem[];
+}
+
+interface Section {
+  title: string;
+  data: BookItem[];
+}
 
 export const LibraryScreen = () => {
   const navigation = useNavigation();
@@ -25,15 +36,15 @@ export const LibraryScreen = () => {
   const [slides, setSlides] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [allSectionsData, setAllSectionsData] = useState([]);
-  const [currentSections, setCurrentSections] = useState([]);
+  const [allSectionsData, setAllSectionsData] = useState<Section[]>([]);
+  const [currentSections, setCurrentSections] = useState<Section[]>([]);
 
   useEffect(() => {
     const fetchBooksAsync = async () => {
       setIsLoading(true);
       try {
         const data = await fetchBooks();
-        const mappedBooks = data.map(book => ({
+        const mappedBooks = data.map((book: BookApiResponse) => ({
           id: String(book.id),
           title: book.name,
           cover_url: book.cover_url,
@@ -60,7 +71,7 @@ export const LibraryScreen = () => {
     const fetchSlidesAsync = async () => {
       try {
         const slidesData = await fetchSlides();
-        const mappedSlides = slidesData.map(slide => ({
+        const mappedSlides = slidesData.map((slide: SlideApiResponse) => ({
           id: String(slide.id),
           title: `Slide ${slide.book_id}`,
           source: {uri: slide.cover},
@@ -75,14 +86,17 @@ export const LibraryScreen = () => {
   }, []);
 
   useEffect(() => {
-    const groupedBooks = books.reduce((acc, book) => {
-      const {genre} = book;
-      if (!acc[genre]) {
-        acc[genre] = [];
-      }
-      acc[genre].push(book);
-      return acc;
-    }, {});
+    const groupedBooks: BooksByGenre = books.reduce(
+      (acc: BooksByGenre, book: BookItem) => {
+        const {genre} = book;
+        if (!acc[genre]) {
+          acc[genre] = [];
+        }
+        acc[genre].push(book);
+        return acc;
+      },
+      {},
+    );
 
     const newSectionsData = Object.entries(groupedBooks).map(
       ([genre, books]) => ({

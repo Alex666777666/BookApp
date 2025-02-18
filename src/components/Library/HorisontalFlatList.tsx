@@ -10,20 +10,7 @@ import {
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../../types/navigation';
-
-export interface BookItem {
-  id: string;
-  title: string;
-  cover_url?: string;
-  author?: string;
-  genre?: string;
-  likes?: string;
-  quotes?: string;
-  summary?: string;
-  views?: string;
-
-  recommendedBooks?: Array<{id: string; title: string}>;
-}
+import {BookItem} from '../../types/bookItem';
 
 export interface HorisontalFlatListProps {
   data: BookItem[];
